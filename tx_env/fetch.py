@@ -147,5 +147,5 @@ class FetchData:
         response_data = await self._fetch_data(session, request_url, max_retries)
 
         if response_data:
-            return json.loads(response_data)
+            return json.dumps(response_data)
         return None

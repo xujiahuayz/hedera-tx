@@ -1,5 +1,6 @@
 import asyncio
 import gzip
+import os
 from datetime import datetime, timedelta
 
 import aiohttp
@@ -14,7 +15,7 @@ end_time = datetime(2025, 2, 21)
 # Construct time intervals for array of timestamps at 1-hour steps
 times = [
     int((start_time + timedelta(hours=i)).timestamp())
-    for i in range(0, int((end_time - start_time).total_seconds() / 3600))
+    for i in range(0, int((end_time - start_time).total_seconds() / 3600 / 8))
 ]
 
 OUTPUT_FILE = DATA_PATH / "balances_800.jsonl.gz"
@@ -30,22 +31,29 @@ async def fetch_and_write(
 ):
     """Fetch balance data and write it immediately to file."""
     async with semaphore:  # Limit concurrent requests
-        query = fetch.construct_query(
-            limit=100,
-            account="0.0.800",
-            further_specs=f"timestamp={timestamp}",
-        )
-        result = await fetch.fetch_without_pagination(session=session, query=query)
+        try:
+            query = fetch.construct_query(
+                limit=100,
+                account="0.0.800",
+                further_specs=f"timestamp={timestamp}",
+            )
+            result = await fetch.fetch_without_pagination(session=session, query=query)
 
-        if result:
-            async with file_lock:  # Prevent concurrent writes
-                async with aiofiles.open(OUTPUT_FILE, "ab") as f:
-                    with gzip.GzipFile(fileobj=f, mode="ab") as gz_file:
-                        gz_file.write((result + "\n").encode())
+            if result:
+                async with file_lock:  # Prevent concurrent writes
+                    async with aiofiles.open(OUTPUT_FILE, "ab") as f:
+                        # Write the result as a new line in the gzip file
+                        print(result)
 
-            print(f"Written data for timestamp: {timestamp}")
-        else:
-            print(f"No data fetched for timestamp: {timestamp}")
+                        # Correctly gzip and write asynchronously
+                        gzipped_data = gzip.compress((result + "\n").encode())
+                        await f.write(gzipped_data)
+
+                print(f"Written data for timestamp: {timestamp}")
+            else:
+                print(f"No data fetched for timestamp: {timestamp}")
+        except Exception as e:
+            print(f"Error fetching/writing data for timestamp {timestamp}: {e}")
 
 
 async def fetch_balances(timestamps: list[int]) -> None:
@@ -63,6 +71,8 @@ async def fetch_balances(timestamps: list[int]) -> None:
 
 
 async def main():
+    # Ensure the directory exists
+    os.makedirs(DATA_PATH, exist_ok=True)
     await fetch_balances(times)
 
 

@@ -65,3 +65,8 @@ pip install -e ".[dev]"
 mkdir data
 ```
 
+## Run scripts
+
+```
+python scripts/fetch_transactions.py
+```

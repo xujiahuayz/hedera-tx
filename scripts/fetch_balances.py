@@ -50,7 +50,7 @@ async def fetch_and_write(
 
 async def fetch_balances(timestamps: list[int]) -> None:
     """Fetch balance data concurrently and write results as we go."""
-    fetch = FetchData()
+    fetch = FetchData(q="balances")
     semaphore = asyncio.Semaphore(CONCURRENCY_LIMIT)
     file_lock = asyncio.Lock()  # Prevent multiple coroutines from writing at once
 

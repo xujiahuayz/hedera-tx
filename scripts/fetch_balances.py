@@ -9,13 +9,13 @@ import aiofiles
 from tx_env.constants import DATA_PATH
 from tx_env.fetch import FetchData
 
-start_time = datetime(2023, 1, 1)
+start_time = datetime(2022, 9, 1)
 end_time = datetime(2025, 2, 21)
 
 # Construct time intervals for array of timestamps at 1-hour steps
 times = [
     int((start_time + timedelta(hours=i)).timestamp())
-    for i in range(0, int((end_time - start_time).total_seconds() / 3600 / 8))
+    for i in range(0, int((end_time - start_time).total_seconds() / 3600))
 ]
 
 OUTPUT_FILE = DATA_PATH / "balances_800.jsonl.gz"

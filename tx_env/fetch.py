@@ -141,7 +141,7 @@ class FetchData:
         session: aiohttp.ClientSession,
         query: str,
         max_retries: int = 13,
-    ) -> dict[str, Any] | None:
+    ) -> str | None:
         """Fetches data from the API without pagination and returns it as a JSON string."""
         request_url = self.rooturl + query
         response_data = await self._fetch_data(session, request_url, max_retries)

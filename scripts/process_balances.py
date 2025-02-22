@@ -14,9 +14,10 @@ with gzip.open(DATA_PATH / "balances_800.jsonl.gz") as f:
         if (w := json.loads(line))
     ]
 
-# downsample for fast rendering
-df = pd.DataFrame(data).iloc[::24, :]
+df = pd.DataFrame(data)
 df.sort_values("timestamp", inplace=True)
+# downsample for fast rendering
+df = df.iloc[::24, :]
 
 plt.figure(figsize=(12, 6))
 # make timestamp human readable
